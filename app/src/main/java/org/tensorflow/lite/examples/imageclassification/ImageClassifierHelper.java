@@ -1,16 +1,11 @@
 package org.tensorflow.lite.examples.imageclassification;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.os.SystemClock;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.tensorflow.lite.gpu.CompatibilityList;
 import org.tensorflow.lite.support.image.ImageProcessor;
@@ -35,8 +30,6 @@ public class ImageClassifierHelper {
     private final Context context;
     private final ClassifierListener imageClassifierListener;
     private ImageClassifier imageClassifier;
-    private SpeechRecognizer stt;
-    private volatile boolean isImageClassifierInitialized = false;
     public ImageClassifierHelper(Float threshold,
                                  int numThreads,
                                  int maxResults,
@@ -51,7 +44,6 @@ public class ImageClassifierHelper {
         this.currentModel = currentModel;
         this.context = context;
         this.imageClassifierListener = imageClassifierListener;
-        startSpeechRecognizer();
     }
 
     public static ImageClassifierHelper create(
@@ -148,10 +140,28 @@ public class ImageClassifierHelper {
         }
     }
 
-    public void classify(Bitmap image, int imageRotation) {
+    public void clearImageClassifier() {
+        imageClassifier = null;
+    }
+
+    public interface ClassifierListener {
+        void onError(String error);
+
+        void onResults(List<Classifications> results, long inferenceTime);
+    }
+
+    public void closeModel(){
+        if (imageClassifier != null) {
+            imageClassifier.close();
+            imageClassifier = null;
+        }
+    }
+
+    public void classifyAndClose(Bitmap image, int imageRotation) {
         if (imageClassifier == null) {
             setupImageClassifier();
         }
+
         long inferenceTime = SystemClock.uptimeMillis();
 
         ImageProcessor imageProcessor =
@@ -165,97 +175,9 @@ public class ImageClassifierHelper {
 
         inferenceTime = SystemClock.uptimeMillis() - inferenceTime;
         imageClassifierListener.onResults(result, inferenceTime);
+
+        // Close the model after classification and notify TTS completion
+        closeModel();
     }
 
-    public void clearImageClassifier() {
-        imageClassifier = null;
-    }
-
-    public interface ClassifierListener {
-        void onError(String error);
-
-        void onResults(List<Classifications> results, long inferenceTime);
-    }
-
-    public void startSpeechRecognizer() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
-
-
-        if (!isImageClassifierInitialized) {
-            // Initialize the ImageClassifier in the background
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    isImageClassifierInitialized = true;
-                    SpeechRecognizer sr = new SpeechRecognizer();
-                    sr.onResults(intent.getExtras());
-                }
-            }).start();
-        }
-    }
-
-    class SpeechRecognizer implements RecognitionListener{
-
-        private static final String RESULTS_RECOGNITION = "yes";
-
-        @Override
-        public void onReadyForSpeech(Bundle bundle) {
-
-        }
-
-        @Override
-        public void onBeginningOfSpeech() {
-
-        }
-
-        @Override
-        public void onRmsChanged(float v) {
-
-        }
-
-        @Override
-        public void onBufferReceived(byte[] bytes) {
-
-        }
-
-        @Override
-        public void onEndOfSpeech() {
-
-        }
-
-        @Override
-        public void onError(int i) {
-            Log.d(TAG,"Speech to Text has stopped working.");
-        }
-
-        @Override
-        public void onResults(Bundle bundle) {
-            ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-            if (matches != null && !matches.isEmpty()) {
-                String recognizedText = matches.get(0);
-                String cmd = "yes";
-                Log.d(TAG, "Match found");
-
-                if(recognizedText.toLowerCase().contains(cmd.toLowerCase())){
-                    setupImageClassifier();
-                }
-
-            } else {
-                Log.d(TAG, "No matches found");
-            }
-
-        }
-
-        @Override
-        public void onPartialResults(Bundle bundle) {
-
-        }
-
-        @Override
-        public void onEvent(int i, Bundle bundle) {
-
-        }
-    }
 }

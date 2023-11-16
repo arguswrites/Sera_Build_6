@@ -269,8 +269,9 @@ public class CameraFragment extends Fragment
 
         int imageRotation = image.getImageInfo().getRotationDegrees();
         image.close();
+        image.close();
         synchronized (task) {
-            imageClassifierHelper.classify(bitmapBuffer, imageRotation);
+            imageClassifierHelper.classifyAndClose(bitmapBuffer, imageRotation);
         }
     }
     @Override

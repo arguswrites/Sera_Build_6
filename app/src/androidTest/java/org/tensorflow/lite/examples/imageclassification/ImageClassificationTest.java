@@ -50,7 +50,7 @@ public class ImageClassificationTest {
                     }
                 });
         helper.setThreshold(0.0f);
-        helper.classify(loadImage("coffee.jpg"), 0);
+        helper.classifyAndClose(loadImage("coffee.jpg"), 0);
     }
 
     private Bitmap loadImage(String fileName) {
