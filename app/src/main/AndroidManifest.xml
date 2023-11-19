@@ -25,15 +25,20 @@
             android:rotationAnimation="seamless"
             android:theme="@style/AppTheme"
             tools:targetApi="O">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <meta-data
                 android:name="android.notch_support"
                 android:value="true" />
         </activity>
+        <activity
+            android:name=".LandingActivity"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
