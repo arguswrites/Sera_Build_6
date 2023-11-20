@@ -65,14 +65,12 @@ public class LandingActivity extends AppCompatActivity implements OnInitListener
     }
 
     private void greetUser() {
-        // Greet the user with a welcome message
         String greeting = "Hello there!";
         textToSpeech.speak(greeting, TextToSpeech.QUEUE_FLUSH, null, null);
 
         String comm = "Shall we begin?";
         textToSpeech.speak(comm, TextToSpeech.QUEUE_FLUSH, null, null);
 
-        // Start listening for the command after the greeting
         startSpeechRecognition(this.getCurrentFocus());
     }
 
