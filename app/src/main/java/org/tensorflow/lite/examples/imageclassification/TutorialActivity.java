@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -46,12 +44,9 @@ public class TutorialActivity extends AppCompatActivity implements TextToSpeech.
         textToSpeech = new TextToSpeech(this, this);
         textOut = findViewById(R.id.textOut);
 
-        // Check and request necessary permissions
         checkAndRequestPermissions();
 
-        // Check if the tutorial has been shown
         if (!isTutorialShown()) {
-            // Show the tutorial with the writing effect
             showTutorial();
         }
     }
@@ -65,10 +60,30 @@ public class TutorialActivity extends AppCompatActivity implements TextToSpeech.
     }
 
     private void showTutorial() {
-        String tutorialText = "Welcome to the Permission Tutorial! Follow these steps to grant the required permission.";
+        String tutorialText = "Hi, my name is Sera.";
         speechText(tutorialText);
-        isListeningForCommand = true;
-        promptSpeechInput();
+        tutorialText = "Using me is simple.";
+        speechText(tutorialText);
+        tutorialText = "Once you have started the app.";
+        speechText(tutorialText);
+        tutorialText = "You point the camera over";
+        speechText(tutorialText);
+        tutorialText = "to the product you are holding.";
+        speechText(tutorialText);
+        tutorialText = "Then I will tell you what kind";
+        speechText(tutorialText);
+        tutorialText = "of product you are holding.";
+        speechText(tutorialText);
+        tutorialText = "After that,";
+        speechText(tutorialText);
+        tutorialText = "I will send you back to the start.";
+        speechText(tutorialText);
+        tutorialText = "You can then start the scan again.";
+        speechText(tutorialText);
+        tutorialText = "Shall we start?";
+        speechText(tutorialText);
+        tutorialText = "";
+        speechText(tutorialText);
     }
 
     private void speechText(@NonNull String text) {
@@ -81,14 +96,20 @@ public class TutorialActivity extends AppCompatActivity implements TextToSpeech.
                 if (currentIndex[0] < words.length) {
                     textOut.append(words[currentIndex[0]] + " ");
                     currentIndex[0]++;
-                    new Handler(Looper.getMainLooper()).postDelayed(this, 200); // Adjust the delay between words here
+                    new Handler(Looper.getMainLooper()).postDelayed(this, 200);
                 } else {
                     speakText(text);
-                    startNewActivity();
+                    if(text.equals("")){
+                        isListeningForCommand = true;
+                        promptSpeechInput();
+                        startNewActivity();
+                    } else{
+                        speakText("Error.");
+                    }
+
                 }
             }
         };
-
         new Handler(Looper.getMainLooper()).post(runnable);
     }
 
@@ -169,37 +190,31 @@ public class TutorialActivity extends AppCompatActivity implements TextToSpeech.
     }
 
     private void checkAndRequestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
+        int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
 
-            if (permission != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        this,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        RECORD_AUDIO_PERMISSION_CODE
-                );
-            }
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    RECORD_AUDIO_PERMISSION_CODE
+            );
         }
     }
 
 
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case RECORD_AUDIO_PERMISSION_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission granted, you can proceed with your functionality
-                } else {
-                    // Permission denied, handle accordingly (e.g., show a message)
-                    Toast.makeText(
-                            this,
-                            "Permission denied. The app may not work as intended.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                }
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showTutorial();
+            } else {
+                Toast.makeText(
+                        this,
+                        "Permission denied. The app may not work as intended.",
+                        Toast.LENGTH_SHORT
+                ).show();
             }
-        }
     }
+
 
     protected void startNewActivity() {
         Intent intent = new Intent(this, LandingActivity.class);
